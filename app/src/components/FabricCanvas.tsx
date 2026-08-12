@@ -22,10 +22,15 @@ import {
 } from "fabric";
 import { v4 as uuid } from "uuid";
 import { rpcCall } from "../api/rpc";
+import { applyTopLeftOrigin } from "../utils/fabricDefaults";
+import { isPaintable } from "../utils/color";
 import { useCanvasStore } from "../store/canvasStore";
 import { downloadDataUrl } from "../utils/export";
 import type { Element } from "../types";
 import styles from "./FabricCanvas.module.css";
+
+// Must run before any Fabric object is constructed — see fabricDefaults.ts.
+applyTopLeftOrigin();
 
 export interface FabricCanvasHandle {
   exportPng: () => Promise<void>;
@@ -273,12 +278,20 @@ const FabricCanvas = forwardRef<FabricCanvasHandle, Props>(
           const cached = imageCache[el.id];
           if (cached) {
             FabricImage.fromURL(cached).then((img) => {
+              const sx = el.width / (img.width || el.width);
+              const sy = el.height / (img.height || el.height);
               img.set({
                 left: el.x, top: el.y,
-                scaleX: el.width / (img.width || el.width),
-                scaleY: el.height / (img.height || el.height),
+                scaleX: sx,
+                scaleY: sy,
                 angle: el.rotation,
                 opacity: el.opacity / 100,
+                // A border on an image: paint the stroke first so it sits outside
+                // the bitmap, and divide by the scale so a strokeWidth of 4 is 4
+                // screen pixels rather than 4 * scale.
+                stroke: isPaintable(el.stroke) ? el.stroke : undefined,
+                strokeWidth: isPaintable(el.stroke) ? el.strokeWidth / Math.max(sx, sy, 0.0001) : 0,
+                paintFirst: "stroke",
                 data: el,
                 selectable: !readOnlyRef.current,
                 evented: !readOnlyRef.current,
@@ -292,9 +305,11 @@ const FabricCanvas = forwardRef<FabricCanvasHandle, Props>(
             const hasBlobId = !!(el.data as { blobId?: string }).blobId;
             const bg = new Rect({
               width: el.width, height: el.height,
-              fill: hasBlobId ? "#e8e8e8" : "#fce8e8",
-              stroke: hasBlobId ? "#ccc" : "#e09090",
-              strokeWidth: 1,
+              // An explicit fill wins over the placeholder tint, so a blob image
+              // still shows its own colour while the bytes are in flight.
+              fill: isPaintable(el.fill) ? el.fill : hasBlobId ? "#e8e8e8" : "#fce8e8",
+              stroke: isPaintable(el.stroke) ? el.stroke : hasBlobId ? "#ccc" : "#e09090",
+              strokeWidth: isPaintable(el.stroke) ? el.strokeWidth || 1 : 1,
             });
             const label = new FabricText(hasBlobId ? "Loading…" : "Image unavailable", {
               fontSize: Math.max(10, Math.min(14, el.width / 12)),
@@ -767,11 +782,16 @@ function buildFabricObject(el: Element): FabricObject | null {
         left: el.x, top: el.y,
         fontSize: el.data.fontSize ?? 24,
         fontFamily: el.data.fontFamily ?? "sans-serif",
-        fill: el.fill || "#111",
+        fill: isPaintable(el.fill) ? el.fill : "#111",
         fontWeight: el.data.bold ? "bold" : "normal",
         fontStyle: el.data.italic ? "italic" : "normal",
         textAlign: el.data.text_align ?? "left",
         opacity: el.opacity / 100,
+        // Outlined text: stroke under the fill, so the outline grows outward and
+        // the glyph stays readable.
+        stroke: isPaintable(el.stroke) ? el.stroke : undefined,
+        strokeWidth: isPaintable(el.stroke) ? el.strokeWidth : 0,
+        paintFirst: "stroke",
         shadow, data: el,
       });
     case "path":

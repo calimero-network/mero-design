@@ -43,6 +43,13 @@ export interface Element {
   createdBy: string;
   createdAt: number;
   updatedAt: number;
+  /**
+   * The contract's `label` field (`update_element_label`). The layers panel keeps
+   * its own local label store, so nothing in the UI reads this yet — but
+   * `add_element` sends the whole element, so it round-trips, and the bundled
+   * starter project uses it to name its parts.
+   */
+  label?: string | null;
   shadowColor?: string | null;
   shadowOffsetX?: number | null;
   shadowOffsetY?: number | null;

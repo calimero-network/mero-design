@@ -115,6 +115,10 @@ interface Props {
   members?: CursorState[];
   onSaveProject?: () => void;
   onImportProject?: (snapshot: ProjectSnapshot) => void;
+  /** Loads the bundled starter project into this board and persists it. */
+  onOpenStarter?: () => void | Promise<void>;
+  /** Drives the confirm step: replacing a board that already has work needs one. */
+  boardHasContent?: boolean;
   /** Viewer (no editor/admin role): hide creation tools + commenting. */
   readOnly?: boolean;
   /** Project import replaces the whole board (admin-gated clear + add), so it
@@ -135,8 +139,14 @@ export default function Toolbar({
   onImportProject,
   readOnly = false,
   canImport = false,
+  onOpenStarter,
+  boardHasContent = false,
 }: Props) {
   const { activeTool, setTool, background, setBackground, undo, redo, undoStack, redoStack } = useCanvasStore();
+  // Loading the starter clears the board, so an occupied board asks once. Kept as
+  // in-menu state rather than window.confirm: a native dialog cannot be driven in
+  // the Tauri webview e2e project.
+  const [starterArmed, setStarterArmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
@@ -262,6 +272,23 @@ export default function Toolbar({
                 <button className={styles.optionsItem} onClick={() => { onSaveProject(); setOptionsOpen(false); }} data-testid="save-project">Save (.merodesign)</button>
                 {canImport && (
                   <button className={styles.optionsItem} onClick={() => { importFileInputRef.current?.click(); setOptionsOpen(false); }} data-testid="open-project">Open (.merodesign)</button>
+                )}
+                {canImport && onOpenStarter && (
+                  <button
+                    className={styles.optionsItem}
+                    data-testid={starterArmed ? "open-starter-confirm" : "open-starter"}
+                    onClick={() => {
+                      if (boardHasContent && !starterArmed) {
+                        setStarterArmed(true);
+                        return;
+                      }
+                      setStarterArmed(false);
+                      setOptionsOpen(false);
+                      void onOpenStarter();
+                    }}
+                  >
+                    {starterArmed ? "Replace board — confirm" : "Open starter project"}
+                  </button>
                 )}
               </>
             )}
