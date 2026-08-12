@@ -546,6 +546,7 @@ export default function CanvasPage() {
         onImportProject={handleImportProject}
         readOnly={!canEdit}
         canImport={isAdmin}
+        memberList={members}
         onOpenStarter={handleOpenStarter}
         boardHasContent={elements.length > 0}
       />
@@ -560,6 +561,7 @@ export default function CanvasPage() {
           />
           <CursorsOverlay cursors={cursors} myIdentity={myIdentity} members={members} viewport={viewport} />
           <CommentsOverlay
+            members={members}
             contextId={projectId ?? ""}
             comments={comments}
             myIdentity={myIdentity}

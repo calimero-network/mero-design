@@ -16,24 +16,24 @@ _`pnpm tasks --check` fails CI if this drifts. A task is only "done" when a spec
 _exists for it and contains at least one live test; the count is × 2 because every spec_
 _runs in both the browser and the Tauri project._
 
-**3 of 15 done** · 14 task tests × 2 projects = 28 runs in CI
+**13 of 15 done** · 55 task tests × 2 projects = 110 runs in CI
 
 | # | Item | Status | Plan | Spec | CI runs |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Multi-select and move layers | not started | PR 2 | — | 0 |
-| 2 | Line and arrow render invisible | not started | PR 3 + PR 4 | — | 0 |
-| 3 | Pencil tool does nothing | not started | PR 5 | — | 0 |
-| 4 | Layer up/down should move one step | not started | PR 6 | — | 0 |
-| 5 | Text cannot be resized vertically | not started | PR 7 | — | 0 |
+| 2 | Line and arrow render invisible | **done** | PR 3 + PR 4 | `task-02-line-arrow.spec.ts` | 6 × 2 = 12 |
+| 3 | Pencil tool does nothing | **done** | PR 5 | `task-03-pencil.spec.ts` | 5 × 2 = 10 |
+| 4 | Layer up/down should move one step | **done** | PR 6 | `task-04-layer-order.spec.ts` | 4 × 2 = 8 |
+| 5 | Text cannot be resized vertically | **done** | PR 7 | `task-05-text-resize.spec.ts` | 3 × 2 = 6 |
 | 6 | Stroke/fill ignored on images | **done** | PR 8 | `task-06-image-stroke.spec.ts` | 5 × 2 = 10 |
 | 7 | Stroke ignored on text | **done** | PR 9 | `task-07-text-stroke.spec.ts` | 4 × 2 = 8 |
-| 8 | Usernames on canvas, comments, members | not started | PR 10 | — | 0 |
-| 9 | Save PNG/SVG/.merodesign in Tauri | not started | PR 11 | — | 0 |
+| 8 | Usernames on canvas, comments, members | **done** | PR 10 | `task-08-comment-usernames.spec.ts` | 4 × 2 = 8 |
+| 9 | Save PNG/SVG/.merodesign in Tauri | **done** | PR 11 | `task-09-tauri-save.spec.ts` | 5 × 2 = 10 |
 | 10 | Comments overlay navbar dropdowns | **done** | PR 12 | `task-10-comment-zorder.spec.ts` | 5 × 2 = 10 |
-| 11 | Images not embedded in code export | not started | PR 13 | — | 0 |
-| 12 | Usernames in project settings | not started | PR 10 | — | 0 |
-| 13 | SVG icon: bundle, logos, favicon, metadata | not started | PR 15 | — | 0 |
-| 14 | Rounded corners on rectangles | not started | PR 14 | — | 0 |
+| 11 | Images not embedded in code export | **done** | PR 13 | `task-11-code-export.spec.ts` | 3 × 2 = 6 |
+| 12 | Usernames in project settings | **done** | PR 10 | `task-12-settings-usernames.spec.ts` | 2 × 2 = 4 |
+| 13 | SVG icon: bundle, logos, favicon, metadata | **done** | PR 15 | `task-13-svg-icon.spec.ts` | 5 × 2 = 10 |
+| 14 | Rounded corners on rectangles | **done** | PR 14 | `task-14-corner-radius.spec.ts` | 4 × 2 = 8 |
 | 15 | Close the Figma feature gap | not started | roadmap | — | 0 |
 <!-- END TASK STATUS -->
 

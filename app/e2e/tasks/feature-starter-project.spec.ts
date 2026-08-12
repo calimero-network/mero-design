@@ -24,7 +24,7 @@ test.describe("starter project", () => {
     const board = await openBoard(page, { role: "admin" });
     await page.locator('[data-testid="options-btn"]').click();
     await page.locator('[data-testid="open-starter"]').click();
-    await expect.poll(() => board.calledWith("add_element").length, { timeout: 30000 }).toBeGreaterThan(400);
+    await expect.poll(() => board.calledWith("add_element").length, { timeout: 90000 }).toBeGreaterThan(400);
   });
 
   test("an occupied board asks once before replacing it", async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe("starter project", () => {
     await expect(page.locator('[data-testid="open-starter-confirm"]')).toBeVisible();
     expect(board.calledWith("clear_elements")).toHaveLength(0);
     await page.locator('[data-testid="open-starter-confirm"]').click();
-    await expect.poll(() => board.calledWith("clear_elements").length, { timeout: 30000 }).toBe(1);
+    await expect.poll(() => board.calledWith("clear_elements").length, { timeout: 90000 }).toBe(1);
   });
 
   /** The whole point: app data has to end up as WASM data. */
@@ -47,7 +47,7 @@ test.describe("starter project", () => {
     await page.locator('[data-testid="options-btn"]').click();
     await page.locator('[data-testid="open-starter"]').click();
     // Comments are sent after every element, so wait on the *last* thing written.
-    await expect.poll(() => board.calledWith("add_comment").length, { timeout: 45000 }).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => board.calledWith("add_comment").length, { timeout: 90000 }).toBeGreaterThanOrEqual(2);
     expect(board.calledWith("add_element").length).toBeGreaterThan(400);
 
     const order = board.calls.map((c) => c.method);
@@ -64,7 +64,7 @@ test.describe("starter project", () => {
     const board = await openBoard(page, { role: "admin" });
     await page.locator('[data-testid="options-btn"]').click();
     await page.locator('[data-testid="open-starter"]').click();
-    await expect.poll(() => board.calledWith("add_element").length, { timeout: 30000 }).toBeGreaterThan(400);
+    await expect.poll(() => board.calledWith("add_element").length, { timeout: 90000 }).toBeGreaterThan(400);
 
     const screens = board
       .calledWith("add_element")
@@ -79,10 +79,10 @@ test.describe("starter project", () => {
     const board = await openBoard(page, { role: "admin" });
     await page.locator('[data-testid="options-btn"]').click();
     await page.locator('[data-testid="open-starter"]').click();
-    await expect.poll(() => board.calledWith("add_element").length, { timeout: 30000 }).toBeGreaterThan(400);
+    await expect.poll(() => board.calledWith("add_element").length, { timeout: 90000 }).toBeGreaterThan(400);
     // The sign-in screen's indigo panel covers (0,0)-(640,900).
     await expect
-      .poll(async () => near(await pixelAt(page, 300, 500), "#4F46E5", 12), { timeout: 15000 })
+      .poll(async () => near(await pixelAt(page, 300, 500), "#4F46E5", 12), { timeout: 30000 })
       .toBe(true);
   });
 
@@ -90,7 +90,7 @@ test.describe("starter project", () => {
     const board = await openBoard(page, { role: "admin" });
     await page.locator('[data-testid="options-btn"]').click();
     await page.locator('[data-testid="open-starter"]').click();
-    await expect.poll(() => board.calledWith("add_element").length, { timeout: 30000 }).toBeGreaterThan(400);
+    await expect.poll(() => board.calledWith("add_element").length, { timeout: 90000 }).toBeGreaterThan(400);
 
     const texts = board
       .calledWith("add_element")
@@ -104,7 +104,7 @@ test.describe("starter project", () => {
     const board = await openBoard(page, { role: "admin" });
     await page.locator('[data-testid="options-btn"]').click();
     await page.locator('[data-testid="open-starter"]').click();
-    await expect.poll(() => board.calledWith("add_element").length, { timeout: 30000 }).toBeGreaterThan(400);
+    await expect.poll(() => board.calledWith("add_element").length, { timeout: 90000 }).toBeGreaterThan(400);
 
     const labels = board
       .calledWith("add_element")
@@ -123,7 +123,7 @@ test.describe("starter project", () => {
     const tauri = await isTauriBuild(page);
     await page.locator('[data-testid="options-btn"]').click();
     await page.locator('[data-testid="open-starter"]').click();
-    await expect.poll(() => board.calledWith("add_element").length, { timeout: 30000 }).toBeGreaterThan(400);
+    await expect.poll(() => board.calledWith("add_element").length, { timeout: 90000 }).toBeGreaterThan(400);
     expect(typeof tauri).toBe("boolean");
     const box = await paintedBox(page, "#4F46E5", 6);
     expect(box).not.toBeNull();

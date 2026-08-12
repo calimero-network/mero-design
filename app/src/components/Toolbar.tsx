@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { resolveName } from "../hooks/useMemberNames";
 import { useCanvasStore, type Background } from "../store/canvasStore";
 import { fileToDataUrl } from "../utils/export";
 import { getImageDimensions } from "../utils/image";
 import Logo from "./Logo";
 import styles from "./Toolbar.module.css";
-import type { CursorState } from "../types";
+import type { Member, CursorState } from "../types";
 import type { ProjectSnapshot } from "../utils/projectFile";
 
 /* ── SVG tool icons ────────────────────────────────────────────── */
@@ -97,11 +98,6 @@ function colorForIdentity(id: string): string {
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
   return CURSOR_COLORS[Math.abs(h) % CURSOR_COLORS.length];
 }
-function shortLabel(id: string) {
-  if (id.length <= 10) return id;
-  return id.slice(0, 4) + "…" + id.slice(-4);
-}
-
 interface Props {
   contextId: string;
   onBack: () => void;
@@ -113,6 +109,8 @@ interface Props {
   onToggleComment?: () => void;
   onImageUpload: (file: File, dataUrl: string, width: number, height: number) => void;
   members?: CursorState[];
+  /** Board roster, for resolving identities to usernames (item 8). */
+  memberList?: Member[];
   onSaveProject?: () => void;
   onImportProject?: (snapshot: ProjectSnapshot) => void;
   /** Loads the bundled starter project into this board and persists it. */
@@ -135,6 +133,7 @@ export default function Toolbar({
   addingComment = false,
   onToggleComment,
   members = [],
+  memberList = [],
   onSaveProject,
   onImportProject,
   readOnly = false,
@@ -337,7 +336,7 @@ export default function Toolbar({
                     className={styles.memberDot}
                     style={{ background: colorForIdentity(m.identity) }}
                   />
-                  <span className={styles.memberLabel}>{shortLabel(m.identity)}</span>
+                  <span className={styles.memberLabel}>{resolveName(memberList, m.identity)}</span>
                 </div>
               ))
             )}

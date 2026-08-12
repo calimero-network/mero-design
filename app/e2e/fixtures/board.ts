@@ -122,6 +122,54 @@ export async function openBoard(page: Page, opts: BoardOptions = {}): Promise<Bo
         value = null;
         break;
       }
+      case "update_element": {
+        const a = body?.params?.argsJson as Record<string, unknown>;
+        state.elements = state.elements.map((e) => {
+          if (e.id !== a.id) return e;
+          const patch: Record<string, unknown> = {};
+          const map: Record<string, string> = {
+            x: "x", y: "y", width: "width", height: "height", rotation: "rotation",
+            fill: "fill", stroke: "stroke", stroke_width: "strokeWidth",
+            opacity: "opacity", corner_radius: "cornerRadius",
+          };
+          for (const [wire, key] of Object.entries(map)) {
+            if (a[wire] !== null && a[wire] !== undefined) patch[key] = a[wire];
+          }
+          return { ...e, ...patch } as Element;
+        });
+        value = null;
+        break;
+      }
+      case "update_text_style": {
+        const a = body?.params?.argsJson as Record<string, unknown>;
+        state.elements = state.elements.map((e) => {
+          if (e.id !== a.id) return e;
+          const data = { ...e.data };
+          if (a.content != null) data.content = a.content as string;
+          if (a.font_size != null) data.fontSize = a.font_size as number;
+          if (a.font_family != null) data.fontFamily = a.font_family as string;
+          if (a.bold != null) data.bold = a.bold as boolean;
+          if (a.italic != null) data.italic = a.italic as boolean;
+          return { ...e, data } as Element;
+        });
+        value = null;
+        break;
+      }
+      case "set_layer_index": {
+        // Mirrors the contract: move to the index, then renumber densely.
+        const a = body?.params?.argsJson as { id?: string; index?: number };
+        const sorted = [...state.elements].sort((x, y) => x.layerIndex - y.layerIndex);
+        const from = sorted.findIndex((e) => e.id === a.id);
+        if (from >= 0) {
+          const to = Math.min(Math.max(a.index ?? 0, 0), sorted.length - 1);
+          const [moved] = sorted.splice(from, 1);
+          sorted.splice(to, 0, moved);
+          const layers = new Map(sorted.map((e, i) => [e.id, i]));
+          state.elements = state.elements.map((e) => ({ ...e, layerIndex: layers.get(e.id) ?? e.layerIndex }));
+        }
+        value = null;
+        break;
+      }
       case "clear_elements": state.elements = []; value = null; break;
       case "clear_comments": state.comments = []; value = null; break;
       case "add_comment": {
