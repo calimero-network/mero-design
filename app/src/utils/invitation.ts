@@ -1,4 +1,4 @@
-import { createLink } from "@calimero-network/mero-platform";
+import { createLink, parseIntent } from "@calimero-network/mero-platform";
 
 export function encodeInvitation(raw: string): string {
   // btoa only accepts Latin1 (code points 0-255) and throws on anything else, so
@@ -58,5 +58,69 @@ export function invitationTokenFrom(input: string): string {
     return new URL(trimmed).searchParams.get("invitation") ?? trimmed;
   } catch {
     return trimmed;
+  }
+}
+
+/** The intent action an invitation link carries. */
+export const JOIN_ACTION = "join";
+
+/** Query parameter carrying the invitation payload. */
+export const INVITATION_PARAM = "invitation";
+
+/**
+ * Pull an invitation token out of anything that might carry one: a platform
+ * HTTPS link, a `calimero://` deep link, a bare query string, or the token
+ * itself.
+ *
+ * Parsing goes through the SDK's `parseIntent` rather than `new URL()`, for one
+ * specific reason: `calimero://<slug>/<action>` has to be split by hand,
+ * because non-special-scheme host parsing mangles a dotted slug like
+ * `com.calimero.merodesign`.
+ *
+ * Returns null when there is no invitation in it — including a link carrying
+ * some other app's slug, which is not ours to redeem.
+ */
+export function invitationFromRaw(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  const intent = parseIntent(trimmed);
+
+  // Reject another app's invitation — but only when this really is a platform
+  // intent, meaning BOTH a slug and an action. `parseIntent` reports the first
+  // path segment as the slug whatever it is, so this app's own routes
+  // (`/teams?invitation=…`) come back as `{slug: "teams", action: null}` — a
+  // route misread as a slug, which it has no way to know. Rejecting on the slug
+  // alone would throw away our own links.
+  if (intent.slug && intent.action && intent.slug !== APP_SLUG) return null;
+
+  const fromIntent = intent.params[INVITATION_PARAM];
+  if (fromIntent) return fromIntent;
+
+  // Not a platform intent (or one without the parameter): try it as a URL, then
+  // fall back to treating the input as the token itself.
+  if (/^(https?|calimero):\/\//i.test(trimmed)) {
+    try {
+      return new URL(trimmed).searchParams.get(INVITATION_PARAM);
+    } catch {
+      return null;
+    }
+  }
+  return trimmed;
+}
+
+/**
+ * The current URL with `?invitation=` removed, for tidying the address bar after
+ * the intent has been captured. Returns the input unchanged when there is
+ * nothing to strip or it cannot be parsed.
+ */
+export function urlWithoutInvitation(href: string): string {
+  try {
+    const url = new URL(href);
+    if (!url.searchParams.has(INVITATION_PARAM)) return href;
+    url.searchParams.delete(INVITATION_PARAM);
+    return url.pathname + (url.search ? url.search : "") + url.hash;
+  } catch {
+    return href;
   }
 }
